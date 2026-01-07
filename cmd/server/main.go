@@ -39,12 +39,10 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userRepo, userSvc, appLogger)
 
-	// Initialize auth service and handler
 	authSvc := service.NewAuthService(userRepo)
 	authSvc.SetJWTConfig(cfg.JWTSecret, cfg.JWTExpiry)
 	authHandler := handler.NewAuthHandler(authSvc, appLogger, cfg.CookieSecure)
 
-	// Initialize admin handler
 	adminHandler := handler.NewAdminHandler(userRepo, appLogger)
 
 	app := fiber.New(fiber.Config{
