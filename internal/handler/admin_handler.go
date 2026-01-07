@@ -9,13 +9,11 @@ import (
 	"BACKEND/internal/repository"
 )
 
-// AdminHandler handles admin-only operations
 type AdminHandler struct {
 	repo   *repository.UserRepository
 	logger *zap.Logger
 }
 
-// NewAdminHandler creates a new admin handler
 func NewAdminHandler(repo *repository.UserRepository, logger *zap.Logger) *AdminHandler {
 	return &AdminHandler{
 		repo:   repo,
@@ -23,8 +21,6 @@ func NewAdminHandler(repo *repository.UserRepository, logger *zap.Logger) *Admin
 	}
 }
 
-// GetAllUsers returns all users (admin only)
-// GET /admin/users
 func (h *AdminHandler) GetAllUsers(c *fiber.Ctx) error {
 	authUser := middleware.GetAuthUser(c)
 
@@ -44,8 +40,6 @@ func (h *AdminHandler) GetAllUsers(c *fiber.Ctx) error {
 	})
 }
 
-// GetStats returns system statistics (admin only)
-// GET /admin/stats
 func (h *AdminHandler) GetStats(c *fiber.Ctx) error {
 	authUser := middleware.GetAuthUser(c)
 
