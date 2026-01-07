@@ -23,13 +23,11 @@ func Load() *Config {
 		log.Println("No .env file found, using environment variables")
 	}
 
-	// Parse JWT expiry in hours, default to 24 hours
 	expiryHours, err := strconv.Atoi(getEnv("JWT_EXPIRY_HOURS", "24"))
 	if err != nil {
 		expiryHours = 24
 	}
 
-	// Parse cookie secure flag, default to true (secure in production)
 	cookieSecure := getEnv("COOKIE_SECURE", "true") == "true"
 
 	return &Config{
