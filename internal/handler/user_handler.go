@@ -25,7 +25,7 @@ func NewUserHandler(r *repository.UserRepository, s *service.UserService, l *zap
 	return &UserHandler{
 		repo:     r,
 		service:  s,
-		validate: validator.New(), // initialize validator once
+		validate: validator.New(), 
 		logger:   l,
 	}
 }
@@ -79,17 +79,15 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
-// GetCurrentUser returns the authenticated user's details
-// GET /users/me
+
 func (h *UserHandler) GetCurrentUser(c *fiber.Ctx) error {
-	// Extract authenticated user from context (set by auth middleware)
+	
 	authUser := middleware.GetAuthUser(c)
 	if authUser == nil {
 		middleware.GetRequestLogger(c).Error("auth user not found in context")
 		return models.SendUnauthorized(c, "Unauthorized", middleware.GetRequestID(c))
 	}
 
-	// Fetch full user details from database using user_id from context
 	resp, err := h.service.GetUserWithAge(c.Context(), authUser.ID)
 	if err != nil {
 		middleware.GetRequestLogger(c).Error("get current user failed", zap.Int32("user_id", authUser.ID), zap.Error(err))
