@@ -13,7 +13,20 @@ type UserWithAgeResponse struct {
 	Age  int    `json:"age"`
 }
 
+// ErrorDetail contains detailed error information
+type ErrorDetail struct {
+	Message   string `json:"message"`
+	Code      string `json:"code"`
+	RequestID string `json:"request_id,omitempty"`
+}
+
+// ErrorResponse is the standardized error response format
 type ErrorResponse struct {
+	Error ErrorDetail `json:"error"`
+}
+
+// Legacy simple error response (deprecated, for backward compatibility)
+type SimpleErrorResponse struct {
 	Error string `json:"error"`
 }
 
