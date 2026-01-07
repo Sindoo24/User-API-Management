@@ -41,8 +41,8 @@ A robust RESTful API built with Go, featuring JWT authentication, role-based acc
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Sindoo24/Simple-Backend-Project.git
-cd Simple-Backend-Project
+git clone https://github.com/Sindoo24/User-API-Management.git
+cd User-API_Management
 ```
 
 2. Create environment file:
@@ -68,47 +68,5 @@ docker-compose up -d
 5. Verify the application is running:
 ```bash
 docker-compose logs -f api
-```
-
-The API will be available at `http://localhost:8080`
-
-### Local Development
-
-1. Install dependencies:
-```bash
-go mod download
-```
-
-2. Install SQLC:
-```bash
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-```
-
-3. Generate SQL code:
-```bash
-sqlc generate
-```
-
-4. Run the application:
-```bash
-go run cmd/server/main.go
-```
-
-## 🧪 Testing
-
-Run all tests:
-```bash
-go test -v ./...
-```
-
-Run specific test package:
-```bash
-go test -v ./internal/handler
-go test -v ./internal/service
-```
-
-Run tests with coverage:
-```bash
-go test -v -cover ./...
 ```
 
