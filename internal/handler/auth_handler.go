@@ -11,8 +11,6 @@ import (
 	"BACKEND/internal/models"
 	"BACKEND/internal/service"
 )
-
-// AuthHandler handles authentication-related HTTP requests
 type AuthHandler struct {
 	authService  service.AuthServiceInterface
 	validate     *validator.Validate
@@ -20,7 +18,6 @@ type AuthHandler struct {
 	cookieSecure bool
 }
 
-// NewAuthHandler creates a new authentication handler
 func NewAuthHandler(authService service.AuthServiceInterface, logger *zap.Logger, cookieSecure bool) *AuthHandler {
 	return &AuthHandler{
 		authService:  authService,
@@ -30,46 +27,38 @@ func NewAuthHandler(authService service.AuthServiceInterface, logger *zap.Logger
 	}
 }
 
-// Signup handles user registration
-// POST /auth/signup
 func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	var req models.SignupRequest
 
-	// Parse request body
 	if err := c.BodyParser(&req); err != nil {
 		middleware.GetRequestLogger(c).Error("failed to parse signup request", zap.Error(err))
 		return models.SendBadRequest(c, "Invalid request body", middleware.GetRequestID(c))
 	}
 
-	// Validate request using go-playground validator
 	if err := h.validate.Struct(req); err != nil {
 		middleware.GetRequestLogger(c).Error("signup validation failed", zap.Error(err))
 		return models.SendError(c, fiber.StatusBadRequest, err.Error(), models.ErrCodeValidationFailed, middleware.GetRequestID(c))
 	}
 
-	// Validate password strength
 	if err := h.authService.ValidatePasswordStrength(req.Password); err != nil {
 		middleware.GetRequestLogger(c).Warn("weak password attempt", zap.String("email", req.Email), zap.Error(err))
 		return models.SendError(c, fiber.StatusBadRequest, err.Error(), models.ErrCodeValidationFailed, middleware.GetRequestID(c))
 	}
 
-	// Create user (password will be hashed inside the service)
 	user, err := h.authService.CreateUser(
 		c.Context(),
 		req.Name,
 		req.Email,
 		req.Password,
 		req.Dob,
-		"user", // default role
+		"user",
 	)
 	if err != nil {
-		// Handle duplicate email error
 		if err == service.ErrEmailAlreadyExists {
 			middleware.GetRequestLogger(c).Warn("signup attempt with existing email", zap.String("email", req.Email))
 			return models.SendConflict(c, "Email already exists", middleware.GetRequestID(c))
 		}
 
-		// Handle duplicate email from database error message
 		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
 			middleware.GetRequestLogger(c).Warn("signup attempt with existing email (db error)", zap.String("email", req.Email))
 			return models.SendConflict(c, "Email already exists", middleware.GetRequestID(c))
@@ -84,7 +73,6 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 		zap.String("email", user.Email),
 	)
 
-	// Return success response (no tokens as per requirements)
 	return c.Status(fiber.StatusCreated).JSON(models.SignupResponse{
 		ID:        user.ID,
 		Name:      user.Name,
@@ -94,24 +82,19 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	})
 }
 
-// Login handles user authentication
-// POST /auth/login
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req models.LoginRequest
 
-	// Parse request body
 	if err := c.BodyParser(&req); err != nil {
 		middleware.GetRequestLogger(c).Error("failed to parse login request", zap.Error(err))
 		return models.SendBadRequest(c, "Invalid request body", middleware.GetRequestID(c))
 	}
 
-	// Validate request using go-playground validator
 	if err := h.validate.Struct(req); err != nil {
 		middleware.GetRequestLogger(c).Error("login validation failed", zap.Error(err))
 		return models.SendError(c, fiber.StatusBadRequest, err.Error(), models.ErrCodeValidationFailed, middleware.GetRequestID(c))
 	}
 
-	// Authenticate user and generate token
 	user, token, err := h.authService.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		if err == service.ErrInvalidCredentials {
@@ -122,7 +105,6 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return models.SendInternalError(c, "Failed to authenticate user", middleware.GetRequestID(c))
 	}
 
-	// Set JWT token in http-only secure cookie with SameSite=Strict
 	cookie := &fiber.Cookie{
 		Name:     "token",
 		Value:    token,
@@ -138,8 +120,6 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		zap.Int32("user_id", user.ID),
 		zap.String("email", user.Email),
 	)
-
-	// Return success response
 	return c.Status(fiber.StatusOK).JSON(models.LoginResponse{
 		Message: "Login successful",
 		User: struct {
